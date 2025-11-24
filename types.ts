@@ -17,8 +17,8 @@ export interface ProcessedImage {
   status: 'pending' | 'processing' | 'done' | 'error';
   base64?: string;
   seoData?: {
-    altText?: string;
-    description?: string;
+    alt?: string;
+    desc?: string;
     suggestion?: string;
   };
 }

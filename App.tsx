@@ -128,7 +128,7 @@ export default function App() {
                 base64: base64Str,
                 seoData: {
                     alt: seoData.alt || (apiKeyToUse ? '' : 'API Key Required for AI'),
-                    description: seoData.desc
+                    desc: seoData.desc
                 }
             } : img)
         }));
