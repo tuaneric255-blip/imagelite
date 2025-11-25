@@ -23,11 +23,20 @@ export const ResultCard: React.FC<Props> = ({ image, activeTool, lang }) => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Determine file extension based on tool
+  // Determine file extension correctly based on the PROCESSED mime type
   const getExtension = () => {
+      // If image.type is available and valid, use it to map to extension
+      if (image.type === 'image/webp') return 'webp';
+      if (image.type === 'image/avif') return 'avif';
+      if (image.type === 'image/jpeg') return 'jpg';
+      if (image.type === 'image/png') return 'png';
+      
+      // Fallback: If activeTool explicitly dictates format
       if (activeTool === ToolType.CONVERT_WEBP) return 'webp';
       if (activeTool === ToolType.CONVERT_AVIF) return 'avif';
-      return image.originalName.split('.').pop();
+      
+      // Last resort: Original extension
+      return image.originalName.split('.').pop() || 'jpg';
   };
 
   return (

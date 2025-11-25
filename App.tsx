@@ -95,7 +95,9 @@ export default function App() {
 
         switch (state.activeTool) {
             case ToolType.COMPRESS:
-                resultBlob = await compressImage(file, 0.7, file.type);
+                // Default compression. If file is png, canvas ignores quality. 
+                // We keep original type unless user explicitly converts.
+                resultBlob = await compressImage(file, 0.6, file.type);
                 break;
             case ToolType.CONVERT_WEBP:
                 resultBlob = await convertToWebP(file);
@@ -106,7 +108,7 @@ export default function App() {
                 base64Str = await fileToBase64(new File([resultBlob], "temp", { type: 'image/avif' }));
                 break;
             case ToolType.BASE64:
-                resultBlob = await compressImage(file, 0.8, file.type);
+                resultBlob = await compressImage(file, 0.6, file.type);
                 base64Str = await fileToBase64(new File([resultBlob], "temp", { type: file.type }));
                 break;
             default:
@@ -129,6 +131,7 @@ export default function App() {
                 processedUrl,
                 processedSize: resultBlob.size,
                 status: 'done',
+                type: resultBlob.type, // CRITICAL FIX: Update the type to match the processed result (e.g., image/avif)
                 base64: base64Str,
                 seoData: {
                     alt: seoData.alt || (apiKeyToUse ? '' : 'API Key Required for AI'),
