@@ -10,7 +10,7 @@ import { Decoder } from './components/Decoder';
 import { SettingsModal } from './components/SettingsModal';
 import { Footer } from './components/Footer';
 import { AppState, ToolType, ProcessedImage, Settings } from './types';
-import { compressImage, convertToWebP, fileToBase64 } from './services/imageUtils';
+import { compressImage, convertToWebP, convertToAVIF, fileToBase64 } from './services/imageUtils';
 import { generateSeoMetadata } from './services/geminiService';
 import { t } from './services/translations';
 
@@ -100,6 +100,10 @@ export default function App() {
             case ToolType.CONVERT_WEBP:
                 resultBlob = await convertToWebP(file);
                 base64Str = await fileToBase64(new File([resultBlob], "temp", { type: 'image/webp' }));
+                break;
+            case ToolType.CONVERT_AVIF:
+                resultBlob = await convertToAVIF(file);
+                base64Str = await fileToBase64(new File([resultBlob], "temp", { type: 'image/avif' }));
                 break;
             case ToolType.BASE64:
                 resultBlob = await compressImage(file, 0.8, file.type);

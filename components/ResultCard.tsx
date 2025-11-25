@@ -23,6 +23,13 @@ export const ResultCard: React.FC<Props> = ({ image, activeTool, lang }) => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // Determine file extension based on tool
+  const getExtension = () => {
+      if (activeTool === ToolType.CONVERT_WEBP) return 'webp';
+      if (activeTool === ToolType.CONVERT_AVIF) return 'avif';
+      return image.originalName.split('.').pop();
+  };
+
   return (
     <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden mb-4 transition-all hover:shadow-md">
       <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-wrap gap-4 items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
@@ -49,7 +56,7 @@ export const ResultCard: React.FC<Props> = ({ image, activeTool, lang }) => {
             </div>
             <a 
               href={image.processedUrl} 
-              download={`optimized-${image.originalName.split('.')[0]}.${activeTool === ToolType.CONVERT_WEBP ? 'webp' : image.originalName.split('.').pop()}`}
+              download={`optimized-${image.originalName.split('.')[0]}.${getExtension()}`}
               className="p-2 bg-primary hover:bg-opacity-90 text-white rounded-lg transition-colors shadow-sm shadow-primary/20"
               title={t(lang, 'res_download')}
             >
@@ -68,7 +75,7 @@ export const ResultCard: React.FC<Props> = ({ image, activeTool, lang }) => {
             >
                 {t(lang, 'res_visual')}
             </button>
-             {(activeTool === ToolType.BASE64 || activeTool === ToolType.CONVERT_WEBP) && (
+             {(activeTool === ToolType.BASE64 || activeTool === ToolType.CONVERT_WEBP || activeTool === ToolType.CONVERT_AVIF) && (
                 <button 
                     onClick={() => setActiveTab('code')}
                     className={`px-3 py-2 text-xs font-medium rounded-t-lg border-b-2 transition-colors ${activeTab === 'code' ? 'border-primary text-primary bg-sky-50 dark:bg-slate-800' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}

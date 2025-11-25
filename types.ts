@@ -1,6 +1,7 @@
 export enum ToolType {
   COMPRESS = 'COMPRESS',
   CONVERT_WEBP = 'CONVERT_WEBP',
+  CONVERT_AVIF = 'CONVERT_AVIF',
   BASE64 = 'BASE64',
   ANIMATION = 'ANIMATION',
   DECODE = 'DECODE'
@@ -52,4 +53,5 @@ export const ACCEPTED_TYPES = {
   'image/png': ['.png'],
   'image/webp': ['.webp'],
   'image/gif': ['.gif'],
+  'image/avif': ['.avif'],
 };

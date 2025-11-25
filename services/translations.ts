@@ -4,6 +4,7 @@ type TranslationKey =
   | 'app_title' | 'app_subtitle' | 'client_secure' | 'docs'
   | 'tool_compress' | 'tool_compress_desc'
   | 'tool_convert' | 'tool_convert_desc'
+  | 'tool_avif' | 'tool_avif_desc'
   | 'tool_base64' | 'tool_base64_desc'
   | 'tool_anim' | 'tool_anim_desc'
   | 'tool_decode' | 'tool_decode_desc'
@@ -27,6 +28,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     tool_compress_desc: 'Lossless reduction',
     tool_convert: 'Convert WebP',
     tool_convert_desc: 'SEO Optimization',
+    tool_avif: 'Convert AVIF',
+    tool_avif_desc: 'Next-Gen Format',
     tool_base64: 'Base64',
     tool_base64_desc: 'Embed codes',
     tool_anim: 'Animation',
@@ -35,12 +38,12 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     tool_decode_desc: 'Base64 to Image',
     upload_title_drag: 'Drop images now',
     upload_title_click: 'Click or drag images here',
-    upload_support: 'Supports JPG, PNG, WebP up to 50MB',
+    upload_support: 'Supports JPG, PNG, WebP, AVIF up to 50MB',
     processing: 'Processing your images...',
     results_empty_title: 'Results will appear here',
     results_empty_desc: 'Processed files and animations show up here.',
     did_you_know_title: 'Did you know?',
-    did_you_know_desc: 'WebP images are 26% smaller than PNGs. Use the "Convert WebP" tool to boost your Core Web Vitals score.',
+    did_you_know_desc: 'AVIF offers superior compression efficiency compared to WebP and JPEG. It provides high quality at smaller file sizes.',
     res_visual: 'Visual Compare',
     res_embed: 'Embed Code',
     res_seo: 'AI Analysis',
@@ -83,6 +86,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     tool_compress_desc: 'Giảm dung lượng',
     tool_convert: 'Chuyển WebP',
     tool_convert_desc: 'Tối ưu SEO',
+    tool_avif: 'Chuyển AVIF',
+    tool_avif_desc: 'Nén thế hệ mới',
     tool_base64: 'Base64',
     tool_base64_desc: 'Mã nhúng',
     tool_anim: 'Tạo GIF',
@@ -91,12 +96,12 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     tool_decode_desc: 'Base64 sang Ảnh',
     upload_title_drag: 'Thả ảnh vào đây',
     upload_title_click: 'Kéo thả hoặc chọn ảnh',
-    upload_support: 'Hỗ trợ JPG, PNG, WebP tối đa 50MB',
+    upload_support: 'Hỗ trợ JPG, PNG, WebP, AVIF tối đa 50MB',
     processing: 'Đang xử lý ảnh...',
     results_empty_title: 'Kết quả sẽ hiện ở đây',
     results_empty_desc: 'Ảnh đã xử lý và file động sẽ xuất hiện tại đây.',
     did_you_know_title: 'Bạn có biết?',
-    did_you_know_desc: 'Ảnh WebP nhỏ hơn PNG 26%. Hãy dùng công cụ "Chuyển WebP" để tăng điểm Core Web Vitals cho website của bạn.',
+    did_you_know_desc: 'AVIF có hiệu suất nén vượt trội hơn WebP và JPEG, giúp ảnh nhỏ gọn nhưng vẫn giữ chất lượng cao nhất.',
     res_visual: 'So sánh',
     res_embed: 'Mã nhúng',
     res_seo: 'Phân tích AI',

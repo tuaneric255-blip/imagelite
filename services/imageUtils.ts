@@ -39,7 +39,7 @@ export const compressImage = async (file: File, quality = 0.7, type = 'image/jpe
       
       canvas.toBlob((blob) => {
         if (blob) resolve(blob);
-        else reject(new Error('Compression failed'));
+        else reject(new Error('Compression/Conversion failed - Format may not be supported by this browser'));
       }, type, quality);
     };
     
@@ -59,4 +59,8 @@ export const fileToBase64 = (file: File): Promise<string> => {
 
 export const convertToWebP = async (file: File): Promise<Blob> => {
   return compressImage(file, 0.8, 'image/webp');
+};
+
+export const convertToAVIF = async (file: File): Promise<Blob> => {
+  return compressImage(file, 0.8, 'image/avif');
 };
