@@ -25,13 +25,13 @@ export const ResultCard: React.FC<Props> = ({ image, activeTool, lang }) => {
 
   // Determine file extension correctly based on the PROCESSED mime type
   const getExtension = () => {
-      // If image.type is available and valid, use it to map to extension
+      // Prioritize the actual result type if available
       if (image.type === 'image/webp') return 'webp';
       if (image.type === 'image/avif') return 'avif';
       if (image.type === 'image/jpeg') return 'jpg';
       if (image.type === 'image/png') return 'png';
       
-      // Fallback: If activeTool explicitly dictates format
+      // Fallback: If activeTool explicitly dictates format (but didn't update image.type for some reason)
       if (activeTool === ToolType.CONVERT_WEBP) return 'webp';
       if (activeTool === ToolType.CONVERT_AVIF) return 'avif';
       

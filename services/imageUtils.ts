@@ -37,8 +37,6 @@ export const compressImage = async (file: File, quality = 0.6, type = 'image/jpe
       }
       ctx.drawImage(img, 0, 0);
       
-      // Basic check: if attempting to compress PNG with 'image/png', quality is ignored by canvas.
-      // To actually compress, we default to JPEG if type is not specified or enforce the requested type.
       const targetType = type || file.type || 'image/jpeg';
 
       canvas.toBlob((blob) => {
@@ -66,7 +64,26 @@ export const convertToWebP = async (file: File): Promise<Blob> => {
   return compressImage(file, 0.6, 'image/webp');
 };
 
-// Adjusted to 0.5. AVIF is very efficient, so 0.5 retains high quality while drastically reducing size.
+/**
+ * Optimized AVIF Conversion
+ * - Quality set to 0.3 (Aggressive) because AVIF quality scale is non-linear. 
+ *   0.5 is often near-lossless, while 0.3 matches WebP 0.6 in visual quality but smaller size.
+ * - Includes fallback check: If browser returns PNG, retry as WebP.
+ */
 export const convertToAVIF = async (file: File): Promise<Blob> => {
-  return compressImage(file, 0.5, 'image/avif');
+  try {
+    // Attempt AVIF compression with aggressive quality
+    const blob = await compressImage(file, 0.3, 'image/avif');
+    
+    // Fallback detection: 
+    // If the browser doesn't support writing AVIF, canvas.toBlob often falls back to image/png silently.
+    if (blob.type === 'image/png' || blob.type !== 'image/avif') {
+        console.warn('Browser does not support native AVIF encoding, falling back to WebP');
+        return convertToWebP(file);
+    }
+    return blob;
+  } catch (e) {
+    console.error('AVIF conversion error, falling back to WebP', e);
+    return convertToWebP(file);
+  }
 };
