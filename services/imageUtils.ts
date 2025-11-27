@@ -139,12 +139,11 @@ const smartOptimizedCompress = async (file: File, targetType: string): Promise<B
     const maxDimension = Math.max(width, height);
     const sizeInMB = file.size / (1024 * 1024);
     
-    // DETECT MOBILE PHOTO: High Res (>2000px) + Low Size (<2.5MB)
-    // iPhone HEIC/JPGs are highly optimized.
-    const isMobilePhoto = maxDimension > 2000 && sizeInMB < 2.5;
+    // DETECT MOBILE PHOTO: High Res (>2000px) + Low Size (<2.0MB)
+    const isMobilePhoto = maxDimension > 2000 && sizeInMB < 2.0;
 
     let startWidth = 1920;
-    // Lower default quality for WebP/AVIF to combat bloat
+    // Lower default quality for WebP to combat bloat
     let startQuality = isAVIF ? 0.5 : 0.65; 
 
     if (isMobilePhoto) {
@@ -194,9 +193,7 @@ const smartOptimizedCompress = async (file: File, targetType: string): Promise<B
         }
         
         // --- PASS 3: Nuclear ---
-        // If Pass 2 is STILL bigger or barely smaller
         if (blob.size >= file.size * 0.9) {
-             console.warn(`Pass 2 (${pass2Width}px) still heavy. Nuke it.`);
              const pass3Blob = await compressImage(file, {
                  quality: 0.3,
                  type: retryType,

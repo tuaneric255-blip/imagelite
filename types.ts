@@ -19,6 +19,7 @@ export interface ProcessedImage {
   type: string; // 'image/jpeg' | 'image/png' | etc
   status: 'pending' | 'processing' | 'done' | 'error';
   base64?: string;
+  warning?: string; // Added warning field for fallback messages
   seoData?: {
     alt?: string;
     desc?: string;
@@ -56,4 +57,5 @@ export const ACCEPTED_TYPES = {
   'image/webp': ['.webp'],
   'image/gif': ['.gif'],
   'image/avif': ['.avif'],
+  'image/svg+xml': ['.svg'],
 };
