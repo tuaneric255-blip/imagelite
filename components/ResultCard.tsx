@@ -148,4 +148,16 @@ export const ResultCard: React.FC<Props> = ({ image, activeTool, lang }) => {
                     <h5 className="text-xs font-bold text-primary mb-1">{t(lang, 'res_suggested_alt')}</h5>
                     <p className="text-sm text-slate-700 dark:text-slate-300">{image.seoData?.alt || t(lang, 'res_analyzing')}</p>
                 </div>
-                <div className="bg-slate-5
+                <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg border border-slate-100 dark:border-slate-700">
+                     <h5 className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">{t(lang, 'res_caption')}</h5>
+                     <p className="text-sm text-slate-600 dark:text-slate-300">{image.seoData?.desc || t(lang, 'res_waiting')}</p>
+                </div>
+                <div className="text-xs text-slate-400 text-center mt-2">
+                    {t(lang, 'res_generated_by')}
+                </div>
+            </div>
+        )}
+      </div>
+    </div>
+  );
+};
