@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ProcessedImage, ToolType, Language } from '../types';
 import { formatBytes, calculateReduction } from '../services/imageUtils';
@@ -30,10 +31,12 @@ export const ResultCard: React.FC<Props> = ({ image, activeTool, lang }) => {
       if (image.type === 'image/avif') return 'avif';
       if (image.type === 'image/jpeg') return 'jpg';
       if (image.type === 'image/png') return 'png';
+      if (image.type === 'image/svg+xml') return 'svg';
       
       // Fallback: If activeTool explicitly dictates format (but didn't update image.type for some reason)
       if (activeTool === ToolType.CONVERT_WEBP) return 'webp';
       if (activeTool === ToolType.CONVERT_AVIF) return 'avif';
+      if (activeTool === ToolType.SVG) return 'svg';
       
       // Last resort: Original extension
       return image.originalName.split('.').pop() || 'jpg';
@@ -84,7 +87,7 @@ export const ResultCard: React.FC<Props> = ({ image, activeTool, lang }) => {
             >
                 {t(lang, 'res_visual')}
             </button>
-             {(activeTool === ToolType.BASE64 || activeTool === ToolType.CONVERT_WEBP || activeTool === ToolType.CONVERT_AVIF) && (
+             {(activeTool === ToolType.BASE64 || activeTool === ToolType.CONVERT_WEBP || activeTool === ToolType.CONVERT_AVIF || activeTool === ToolType.SVG) && (
                 <button 
                     onClick={() => setActiveTab('code')}
                     className={`px-3 py-2 text-xs font-medium rounded-t-lg border-b-2 transition-colors ${activeTab === 'code' ? 'border-primary text-primary bg-sky-50 dark:bg-slate-800' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
@@ -123,7 +126,15 @@ export const ResultCard: React.FC<Props> = ({ image, activeTool, lang }) => {
                     {copied ? <Check size={14} /> : <Copy size={14} />}
                  </button>
                  <div className="break-all">
-                    <span className="text-pink-400">&lt;img</span> <span className="text-sky-400">src</span>=<span className="text-green-400">"{image.base64.substring(0, 100)}..."</span> <span className="text-pink-400">/&gt;</span>
+                    {activeTool === ToolType.SVG && image.base64.startsWith('data:image/svg+xml;base64,') ? (
+                         <>
+                             <span className="text-pink-400">&lt;object</span> <span className="text-sky-400">data</span>=<span className="text-green-400">"{image.base64.substring(0, 100)}..."</span> <span className="text-sky-400">type</span>=<span className="text-green-400">"image/svg+xml"</span><span className="text-pink-400">&gt;&lt;/object&gt;</span>
+                         </>
+                    ) : (
+                         <>
+                            <span className="text-pink-400">&lt;img</span> <span className="text-sky-400">src</span>=<span className="text-green-400">"{image.base64.substring(0, 100)}..."</span> <span className="text-pink-400">/&gt;</span>
+                         </>
+                    )}
                  </div>
                  <div className="mt-4 pt-4 border-t border-slate-800 text-slate-500 italic">
                     Full Base64 string is ready to copy.
@@ -137,16 +148,4 @@ export const ResultCard: React.FC<Props> = ({ image, activeTool, lang }) => {
                     <h5 className="text-xs font-bold text-primary mb-1">{t(lang, 'res_suggested_alt')}</h5>
                     <p className="text-sm text-slate-700 dark:text-slate-300">{image.seoData?.alt || t(lang, 'res_analyzing')}</p>
                 </div>
-                <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg border border-slate-100 dark:border-slate-700">
-                     <h5 className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">{t(lang, 'res_caption')}</h5>
-                     <p className="text-sm text-slate-600 dark:text-slate-300">{image.seoData?.desc || t(lang, 'res_waiting')}</p>
-                </div>
-                <div className="text-xs text-slate-400 text-center mt-2">
-                    {t(lang, 'res_generated_by')}
-                </div>
-            </div>
-        )}
-      </div>
-    </div>
-  );
-};
+                <div className="bg-slate-5

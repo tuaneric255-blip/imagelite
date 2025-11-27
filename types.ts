@@ -1,10 +1,12 @@
+
 export enum ToolType {
   COMPRESS = 'COMPRESS',
   CONVERT_WEBP = 'CONVERT_WEBP',
   CONVERT_AVIF = 'CONVERT_AVIF',
   BASE64 = 'BASE64',
   ANIMATION = 'ANIMATION',
-  DECODE = 'DECODE'
+  DECODE = 'DECODE',
+  SVG = 'SVG'
 }
 
 export interface ProcessedImage {

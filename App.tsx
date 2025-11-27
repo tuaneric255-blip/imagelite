@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Navbar } from './components/Navbar';
@@ -10,7 +11,7 @@ import { Decoder } from './components/Decoder';
 import { SettingsModal } from './components/SettingsModal';
 import { Footer } from './components/Footer';
 import { AppState, ToolType, ProcessedImage, Settings } from './types';
-import { compressSimple, convertToWebP, convertToAVIF, fileToBase64 } from './services/imageUtils'; // Updated import
+import { compressSimple, convertToWebP, convertToAVIF, fileToBase64, generateSVGWrapper } from './services/imageUtils';
 import { generateSeoMetadata } from './services/geminiService';
 import { t } from './services/translations';
 
@@ -105,6 +106,11 @@ export default function App() {
             case ToolType.CONVERT_AVIF:
                 resultBlob = await convertToAVIF(file);
                 base64Str = await fileToBase64(new File([resultBlob], "temp", { type: resultBlob.type }));
+                break;
+            case ToolType.SVG:
+                const svgContent = await generateSVGWrapper(file);
+                resultBlob = new Blob([svgContent], { type: 'image/svg+xml' });
+                base64Str = await fileToBase64(new File([resultBlob], "temp", { type: 'image/svg+xml' }));
                 break;
             case ToolType.BASE64:
                 // Optimize before base64 to keep string length manageable

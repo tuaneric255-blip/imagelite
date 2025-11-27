@@ -1,7 +1,7 @@
 import React from 'react';
 import { ToolType, Language } from '../types';
 import { t } from '../services/translations';
-import { Minimize2, Globe, FileCode, Film, ImageMinus, Zap } from 'lucide-react';
+import { Minimize2, Globe, FileCode, Film, ImageMinus, Zap, CodeXml } from 'lucide-react';
 
 interface Props {
   activeTool: ToolType;
@@ -14,6 +14,7 @@ export const MobileBottomNav: React.FC<Props> = ({ activeTool, onSelect, lang })
     { id: ToolType.COMPRESS, label: t(lang, 'tool_compress'), icon: Minimize2 },
     { id: ToolType.CONVERT_WEBP, label: 'WebP', icon: Globe },
     { id: ToolType.CONVERT_AVIF, label: 'AVIF', icon: Zap },
+    { id: ToolType.SVG, label: 'SVG', icon: CodeXml },
     { id: ToolType.BASE64, label: 'Base64', icon: FileCode },
     { id: ToolType.ANIMATION, label: 'GIF', icon: Film },
     { id: ToolType.DECODE, label: t(lang, 'tool_decode'), icon: ImageMinus },

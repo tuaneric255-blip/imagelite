@@ -1,3 +1,4 @@
+
 import { Language } from '../types';
 
 type TranslationKey = 
@@ -6,6 +7,7 @@ type TranslationKey =
   | 'tool_convert' | 'tool_convert_desc'
   | 'tool_avif' | 'tool_avif_desc'
   | 'tool_base64' | 'tool_base64_desc'
+  | 'tool_svg' | 'tool_svg_desc'
   | 'tool_anim' | 'tool_anim_desc'
   | 'tool_decode' | 'tool_decode_desc'
   | 'upload_title_drag' | 'upload_title_click' | 'upload_support'
@@ -32,6 +34,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     tool_avif_desc: 'Ultra Compression',
     tool_base64: 'Base64',
     tool_base64_desc: 'Embed codes',
+    tool_svg: 'Image to SVG',
+    tool_svg_desc: 'Vector wrapper',
     tool_anim: 'Animation',
     tool_anim_desc: 'Create GIF loop',
     tool_decode: 'Decode',
@@ -90,6 +94,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     tool_avif_desc: 'Siêu nén (New)',
     tool_base64: 'Base64',
     tool_base64_desc: 'Mã nhúng',
+    tool_svg: 'Ảnh sang SVG',
+    tool_svg_desc: 'Bọc trong thẻ SVG',
     tool_anim: 'Tạo GIF',
     tool_anim_desc: 'Ảnh động',
     tool_decode: 'Giải mã',

@@ -1,7 +1,7 @@
 import React from 'react';
 import { ToolType, Language } from '../types';
 import { t } from '../services/translations';
-import { Minimize2, Globe, FileCode, Film, ImageMinus, Zap } from 'lucide-react';
+import { Minimize2, Globe, FileCode, Film, ImageMinus, Zap, CodeXml } from 'lucide-react';
 
 interface Props {
   activeTool: ToolType;
@@ -15,6 +15,7 @@ export const ToolSelector: React.FC<Props> = ({ activeTool, onSelect, lang }) =>
     { id: ToolType.COMPRESS, label: t(lang, 'tool_compress'), icon: Minimize2, desc: t(lang, 'tool_compress_desc') },
     { id: ToolType.CONVERT_WEBP, label: t(lang, 'tool_convert'), icon: Globe, desc: t(lang, 'tool_convert_desc') },
     { id: ToolType.CONVERT_AVIF, label: t(lang, 'tool_avif'), icon: Zap, desc: t(lang, 'tool_avif_desc') },
+    { id: ToolType.SVG, label: t(lang, 'tool_svg'), icon: CodeXml, desc: t(lang, 'tool_svg_desc') },
     { id: ToolType.BASE64, label: t(lang, 'tool_base64'), icon: FileCode, desc: t(lang, 'tool_base64_desc') },
     { id: ToolType.ANIMATION, label: t(lang, 'tool_anim'), icon: Film, desc: t(lang, 'tool_anim_desc') },
     { id: ToolType.DECODE, label: t(lang, 'tool_decode'), icon: ImageMinus, desc: t(lang, 'tool_decode_desc') },
