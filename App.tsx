@@ -10,7 +10,7 @@ import { Decoder } from './components/Decoder';
 import { SettingsModal } from './components/SettingsModal';
 import { Footer } from './components/Footer';
 import { AppState, ToolType, ProcessedImage, Settings } from './types';
-import { compressImage, convertToWebP, convertToAVIF, fileToBase64 } from './services/imageUtils';
+import { compressSimple, convertToWebP, convertToAVIF, fileToBase64 } from './services/imageUtils'; // Updated import
 import { generateSeoMetadata } from './services/geminiService';
 import { t } from './services/translations';
 
@@ -95,22 +95,21 @@ export default function App() {
 
         switch (state.activeTool) {
             case ToolType.COMPRESS:
-                // Default compression
-                resultBlob = await compressImage(file, 0.6, file.type);
+                // Use smart compression which keeps original format but resizes/optimizes
+                resultBlob = await compressSimple(file);
                 break;
             case ToolType.CONVERT_WEBP:
                 resultBlob = await convertToWebP(file);
                 base64Str = await fileToBase64(new File([resultBlob], "temp", { type: 'image/webp' }));
                 break;
             case ToolType.CONVERT_AVIF:
-                // Logic handles fallback to WebP if AVIF fails
                 resultBlob = await convertToAVIF(file);
-                // We must use resultBlob.type here because it might have fallen back to webp
                 base64Str = await fileToBase64(new File([resultBlob], "temp", { type: resultBlob.type }));
                 break;
             case ToolType.BASE64:
-                resultBlob = await compressImage(file, 0.6, file.type);
-                base64Str = await fileToBase64(new File([resultBlob], "temp", { type: file.type }));
+                // Optimize before base64 to keep string length manageable
+                resultBlob = await compressSimple(file);
+                base64Str = await fileToBase64(new File([resultBlob], "temp", { type: resultBlob.type }));
                 break;
             default:
                 break;
@@ -132,7 +131,7 @@ export default function App() {
                 processedUrl,
                 processedSize: resultBlob.size,
                 status: 'done',
-                type: resultBlob.type, // CRITICAL: Update type based on actual result (avif or webp fallback)
+                type: resultBlob.type, 
                 base64: base64Str,
                 seoData: {
                     alt: seoData.alt || (apiKeyToUse ? '' : 'API Key Required for AI'),
