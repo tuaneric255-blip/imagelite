@@ -15,8 +15,13 @@ export const Navbar: React.FC<Props> = ({ onOpenSettings, lang }) => {
         <div className="p-1.5 bg-primary text-white rounded-lg shadow-sm">
           <Zap size={20} fill="currentColor" />
         </div>
-        <span className="text-slate-800 dark:text-slate-100">{t(lang, 'app_title')}</span>
-        <span className="text-slate-400 font-normal">{t(lang, 'app_subtitle')}</span>
+        <div className="flex flex-col md:flex-row md:items-baseline gap-1 md:gap-2">
+            <span className="text-slate-800 dark:text-slate-100">{t(lang, 'app_title')}</span>
+            <span className="text-slate-400 font-normal text-sm md:text-base">{t(lang, 'app_subtitle')}</span>
+        </div>
+        <span className="ml-2 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-mono font-medium text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+            v2.1
+        </span>
       </div>
       <div className="ml-auto flex gap-4 items-center text-sm font-medium text-slate-600 dark:text-slate-300">
         <span className="hidden sm:block">{t(lang, 'client_secure')}</span>
