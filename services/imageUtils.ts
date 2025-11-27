@@ -21,11 +21,25 @@ export const calculateReduction = (original: number, processed: number) => {
 interface CompressOptions {
   quality: number;
   type: string;
-  maxWidth?: number; // Added smart resizing capability
+  maxWidth?: number;
 }
 
 /**
- * Helper to get image dimensions without rendering
+ * Helper: Convert DataURI to Blob
+ */
+const dataURItoBlob = (dataURI: string): Blob => {
+  const byteString = atob(dataURI.split(',')[1]);
+  const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+  const ab = new ArrayBuffer(byteString.length);
+  const ia = new Uint8Array(ab);
+  for (let i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i);
+  }
+  return new Blob([ab], { type: mimeString });
+};
+
+/**
+ * Helper to get image dimensions
  */
 const getImageDimensions = (file: File): Promise<{width: number, height: number}> => {
   return new Promise((resolve) => {
@@ -53,7 +67,6 @@ export const compressImage = async (file: File, options: CompressOptions): Promi
       let height = img.height;
 
       // SMART RESIZING LOGIC
-      // If maxWidth is provided, ensure dimensions don't exceed it.
       const MAX_WIDTH = options.maxWidth || 0;
       if (MAX_WIDTH > 0 && (width > MAX_WIDTH || height > MAX_WIDTH)) {
         if (width > height) {
@@ -74,19 +87,27 @@ export const compressImage = async (file: File, options: CompressOptions): Promi
         return;
       }
 
-      // High quality smoothing for resizing
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(img, 0, 0, width, height);
       
       const targetType = options.type || file.type || 'image/jpeg';
 
+      // MOBILE FIX: Use toDataURL for WebP/AVIF first
+      // Some mobile browsers handle toDataURL('image/webp') better than toBlob
+      if (targetType === 'image/webp' || targetType === 'image/avif') {
+          const dataUrl = canvas.toDataURL(targetType, options.quality);
+          // Check if browser supported it or fell back to png
+          if (dataUrl.startsWith('data:' + targetType)) {
+              resolve(dataURItoBlob(dataUrl));
+              return;
+          }
+          // If fallback happened (e.g. data:image/png), we continue to standard blob 
+          // but we will catch the type mismatch later.
+      }
+
       canvas.toBlob((blob) => {
         if (blob) {
-            // Browser fallback detection
-            if (targetType !== 'image/png' && blob.type === 'image/png' && targetType !== blob.type) {
-                console.warn(`Browser fell back to PNG from ${targetType}`);
-            }
             resolve(blob);
         } else {
             reject(new Error('Compression failed'));
@@ -110,31 +131,26 @@ export const fileToBase64 = (file: File): Promise<string> => {
 
 /**
  * SMART OPTIMIZER (MOBILE-FIRST STRATEGY)
- * Detects "Mobile Photos" (High Res + Low Size) and aggressively downscales them
- * BEFORE attempting compression to prevent bloat.
  */
 const smartOptimizedCompress = async (file: File, targetType: string): Promise<Blob> => {
     const isAVIF = targetType === 'image/avif';
-    const isWebP = targetType === 'image/webp';
     
-    // 1. Analyze Input
     const { width, height } = await getImageDimensions(file);
     const maxDimension = Math.max(width, height);
     const sizeInMB = file.size / (1024 * 1024);
     
-    // DETECT MOBILE PHOTO SYNDROME:
-    // Huge resolution (> 2500px) BUT small file size (< 2.5MB)
-    // This implies heavy hardware compression. Converting to Canvas raw pixels will explode size.
-    const isMobilePhoto = maxDimension > 2500 && sizeInMB < 2.5;
+    // DETECT MOBILE PHOTO: High Res (>2000px) + Low Size (<2.5MB)
+    // iPhone HEIC/JPGs are highly optimized.
+    const isMobilePhoto = maxDimension > 2000 && sizeInMB < 2.5;
 
     let startWidth = 1920;
-    let startQuality = isAVIF ? 0.45 : 0.7;
+    // Lower default quality for WebP/AVIF to combat bloat
+    let startQuality = isAVIF ? 0.5 : 0.65; 
 
     if (isMobilePhoto) {
-        console.warn('Detected Mobile Photo (High Res/Low Size). Engaging Pre-emptive Downscaling.');
-        // Skip 1920px. Go straight to HD (1280px) to kill pixel overhead.
-        startWidth = 1280; 
-        startQuality = isAVIF ? 0.4 : 0.6;
+        console.warn('Mobile Photo Detected. Engaging Pre-emptive Optimization.');
+        startWidth = 1280; // HD Ready
+        startQuality = isAVIF ? 0.35 : 0.5;
     }
 
     // --- PASS 1 ---
@@ -144,18 +160,32 @@ const smartOptimizedCompress = async (file: File, targetType: string): Promise<B
         maxWidth: startWidth 
     });
 
-    // --- PASS 2: Check & React ---
-    // If output is larger than input, or still too inefficient
-    if (blob.size >= file.size) {
-        console.warn(`Pass 1 (${startWidth}px) bloated: ${formatBytes(blob.size)}. Engaging Emergency Mode.`);
+    // CRITICAL FIX: Check if Browser Failed to Encode WebP/AVIF
+    // If we asked for WebP but got PNG, the browser doesn't support writing WebP.
+    // PNG will be HUGE. We must fallback to JPEG to save space.
+    if ((targetType === 'image/webp' || targetType === 'image/avif') && blob.type === 'image/png') {
+        console.warn(`${targetType} not supported (got PNG). Fallback to JPEG to prevent bloating.`);
+        // Force conversion to JPEG
+        blob = await compressImage(file, {
+            quality: 0.7,
+            type: 'image/jpeg',
+            maxWidth: startWidth
+        });
+    }
 
-        // Aggressive Drop: 1024px (Good for blog widths)
+    // --- PASS 2: Check & React ---
+    if (blob.size >= file.size) {
+        console.warn(`Pass 1 bloated (${formatBytes(blob.size)}). Engaging Emergency Mode.`);
+
         const pass2Width = 1024;
-        const pass2Quality = isAVIF ? 0.3 : 0.5;
+        const pass2Quality = blob.type === 'image/avif' ? 0.25 : 0.4;
+
+        // Ensure we stick to the format of 'blob' (which might be JPEG now if fallback occurred)
+        const retryType = blob.type; 
 
         const retryBlob = await compressImage(file, { 
             quality: pass2Quality, 
-            type: targetType, 
+            type: retryType, 
             maxWidth: pass2Width 
         });
 
@@ -163,14 +193,13 @@ const smartOptimizedCompress = async (file: File, targetType: string): Promise<B
             blob = retryBlob;
         }
         
-        // --- PASS 3: The Nuclear Option ---
-        // If Pass 2 is STILL bigger (rare, but possible with tiny heavily compressed source)
-        // Drop to 800px.
-        if (blob.size >= file.size) {
-             console.warn(`Pass 2 (${pass2Width}px) still bloated. Nuke it.`);
+        // --- PASS 3: Nuclear ---
+        // If Pass 2 is STILL bigger or barely smaller
+        if (blob.size >= file.size * 0.9) {
+             console.warn(`Pass 2 (${pass2Width}px) still heavy. Nuke it.`);
              const pass3Blob = await compressImage(file, {
-                 quality: isAVIF ? 0.2 : 0.4,
-                 type: targetType,
+                 quality: 0.3,
+                 type: retryType,
                  maxWidth: 800
              });
              
@@ -180,17 +209,14 @@ const smartOptimizedCompress = async (file: File, targetType: string): Promise<B
         }
     }
 
-    // FINAL DECISION LOGIC:
-    
-    // Scenario A: Same Format (e.g., Compress JPG -> JPG)
-    // Rule: NEVER return a larger file. Use Original.
-    if (file.type === targetType && blob.size >= file.size) {
-        console.warn('Optimization failed to reduce size. Returning original file.');
+    // Final Decision:
+    // If we are just compressing (Same Format) and result is bigger -> Return Original
+    if (file.type === blob.type && blob.size >= file.size) {
         return file;
     }
 
-    // Scenario B: Convert Format (e.g., JPG -> WebP/AVIF)
-    // Rule: Return the smallest blob we generated. 
+    // If we converted (JPG -> WebP/JPG-Fallback), return the result even if slightly larger
+    // (though our logic tries hard to avoid this).
     return blob;
 };
 
@@ -199,27 +225,16 @@ export const convertToWebP = async (file: File): Promise<Blob> => {
 };
 
 export const convertToAVIF = async (file: File): Promise<Blob> => {
-  try {
-    const blob = await smartOptimizedCompress(file, 'image/avif');
-    // Fallback if browser doesn't support AVIF writing (returns PNG)
-    if (blob.type === 'image/png') {
-        console.warn('AVIF encoding not supported by browser, falling back to WebP');
-        return convertToWebP(file);
-    }
-    return blob;
-  } catch (e) {
-    return convertToWebP(file);
-  }
+  return smartOptimizedCompress(file, 'image/avif');
 };
 
 // General compress tool
 export const compressSimple = async (file: File): Promise<Blob> => {
-    return smartOptimizedCompress(file, file.type); // Keep original format
+    return smartOptimizedCompress(file, file.type); 
 };
 
 // SVG Generator
 export const generateSVGWrapper = async (file: File): Promise<string> => {
-    // If it's already an SVG, read it as text
     if (file.type === 'image/svg+xml') {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -229,12 +244,9 @@ export const generateSVGWrapper = async (file: File): Promise<string> => {
         });
     }
 
-    // If it's a bitmap, wrap it
-    // First compress it slightly to ensure the Base64 isn't massive
     const optimizedBlob = await smartOptimizedCompress(file, file.type);
     const base64 = await fileToBase64(new File([optimizedBlob], file.name, { type: file.type }));
     
-    // Get dimensions
     return new Promise((resolve) => {
         const img = new Image();
         img.onload = () => {

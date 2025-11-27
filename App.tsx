@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Navbar } from './components/Navbar';
@@ -93,10 +92,10 @@ export default function App() {
       try {
         let resultBlob: Blob = file;
         let base64Str: string | undefined;
+        let warningMsg: string | undefined;
 
         switch (state.activeTool) {
             case ToolType.COMPRESS:
-                // Use smart compression which keeps original format but resizes/optimizes
                 resultBlob = await compressSimple(file);
                 break;
             case ToolType.CONVERT_WEBP:
@@ -113,7 +112,6 @@ export default function App() {
                 base64Str = await fileToBase64(new File([resultBlob], "temp", { type: 'image/svg+xml' }));
                 break;
             case ToolType.BASE64:
-                // Optimize before base64 to keep string length manageable
                 resultBlob = await compressSimple(file);
                 base64Str = await fileToBase64(new File([resultBlob], "temp", { type: resultBlob.type }));
                 break;
@@ -121,10 +119,18 @@ export default function App() {
                 break;
         }
 
+        // DETECT FALLBACK & SET WARNING
+        if (state.activeTool === ToolType.CONVERT_WEBP && resultBlob.type !== 'image/webp') {
+             warningMsg = t(state.settings.language, 'warn_webp_fallback');
+        }
+        if (state.activeTool === ToolType.CONVERT_AVIF && resultBlob.type !== 'image/avif') {
+             warningMsg = t(state.settings.language, 'warn_avif_fallback');
+        }
+
         const apiKeyToUse = state.settings.userApiKey || process.env.API_KEY || '';
         
         let seoData = { alt: '', desc: '' };
-        if (apiKeyToUse) {
+        if (apiKeyToUse && state.activeTool !== ToolType.SVG) {
              seoData = await generateSeoMetadata(file.name, file.type, apiKeyToUse);
         }
 
@@ -139,6 +145,7 @@ export default function App() {
                 status: 'done',
                 type: resultBlob.type, 
                 base64: base64Str,
+                warning: warningMsg, // Add warning to state
                 seoData: {
                     alt: seoData.alt || (apiKeyToUse ? '' : 'API Key Required for AI'),
                     desc: seoData.desc
@@ -212,6 +219,7 @@ export default function App() {
                         onFilesSelected={processFiles} 
                         isProcessing={state.isProcessing} 
                         lang={state.settings.language}
+                        accept={state.activeTool === ToolType.SVG ? "image/*,.svg" : "image/*"} // Allow SVG upload
                     />
 
                     <div className="space-y-4">
